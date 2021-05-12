@@ -47,7 +47,7 @@ export default class App extends React.Component {
 					var sessions = center.sessions;
 					for (var i = 0; i < sessions.length; i++){
 						//console.log(session);
-						if (sessions[i].min_age_limit === this.state.age && sessions[i].available_capacity > 0 ) {
+						if (sessions[i].min_age_limit === parseInt(this.state.age) && sessions[i].available_capacity > 0 ) {
 							return true;
 						}
 					}
