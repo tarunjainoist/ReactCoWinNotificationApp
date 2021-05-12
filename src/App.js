@@ -47,10 +47,11 @@ export default class App extends React.Component {
 					var sessions = center.sessions;
 					for (var i = 0; i < sessions.length; i++){
 						//console.log(session);
-						if (sessions[i].min_age_limit == this.state.age && sessions[i].available_capacity > 0 ) {
+						if (sessions[i].min_age_limit === this.state.age && sessions[i].available_capacity > 0 ) {
 							return true;
 						}
 					}
+					return false;
 				});
 				this.setState({availableCenters: slotAvailableCenters});
 				console.log(slotAvailableCenters);
@@ -75,7 +76,7 @@ export default class App extends React.Component {
 			const districts = data.districts;	 
 			for (let i = 0; i < districts.length; i++) {
 				// default to bhopal
-				districts[i].district_id == 312 ?
+				districts[i].district_id === 312 ?
 				items.push(<option key={districts[i].district_id} value={districts[i].district_id} selected>{districts[i].district_name}</option>) :
 				items.push(<option key={districts[i].district_id} value={districts[i].district_id}>{districts[i].district_name}</option>); 				
 			}
