@@ -56,7 +56,7 @@ export default class App extends React.Component {
 				this.setState({availableCenters: slotAvailableCenters});
 				console.log(slotAvailableCenters);
 				if (slotAvailableCenters.length > 0) {
-					var notification = new Notification('18+ vaccine slot avaiable.', {
+					var notification = new Notification(this.state.age + '+ vaccine slot avaiable.', {
 					   icon: 'http://cdn.sstatic.net/stackexchange/img/logos/so/so-icon.png',
 					   body: 'Click this notification to go to CoWin!',
 					  });
