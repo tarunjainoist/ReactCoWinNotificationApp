@@ -59,7 +59,7 @@ export default class App extends React.Component {
 					}
 					return false;
 				});
-				if (JSON.stringify(this.state.availableCenters) != JSON.stringify(slotAvailableCenters)) {
+				if (JSON.stringify(this.state.availableCenters) !== JSON.stringify(slotAvailableCenters)) {
 					// result changed
 					this.setState({availableCenters: slotAvailableCenters});
 					console.log(slotAvailableCenters);
