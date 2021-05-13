@@ -3,6 +3,7 @@ import logo from './logo.svg';
 import './App.css';
 
 export default class App extends React.Component {
+	intervalID = 0;
 	constructor() {
 		super();
 		//set default date
@@ -35,10 +36,15 @@ export default class App extends React.Component {
 	}
 	
 	notifyMe = () => {
-		if (Notification.permission !== 'granted')
+
+		if (Notification.permission !== 'granted') {
 			Notification.requestPermission();
+		}
 		else {
-			setInterval( async () => {
+			if (this.intervalID) {
+				clearInterval(this.intervalID);
+			}
+			this.intervalID = setInterval( async () => {
 				const url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByDistrict?district_id=" + this.state.districtId + "&date=" + this.state.date;
 				const response = await fetch(url);
 				const data = await response.json();
@@ -53,18 +59,22 @@ export default class App extends React.Component {
 					}
 					return false;
 				});
-				this.setState({availableCenters: slotAvailableCenters});
-				console.log(slotAvailableCenters);
-				if (slotAvailableCenters.length > 0) {
-					var notification = new Notification(this.state.age + '+ vaccine slot avaiable.', {
-					   icon: 'http://cdn.sstatic.net/stackexchange/img/logos/so/so-icon.png',
-					   body: 'Click this notification to go to CoWin!',
-					  });
-					  notification.onclick = function() {
-							window.open('https://selfregistration.cowin.gov.in/');
-					  };
+				if (JSON.stringify(this.state.availableCenters) != JSON.stringify(slotAvailableCenters)) {
+					// result changed
+					this.setState({availableCenters: slotAvailableCenters});
+					console.log(slotAvailableCenters);
+					if (slotAvailableCenters.length > 0) {
+						var notification = new Notification(this.state.age + '+ vaccine slot avaiable.', {
+						   icon: 'http://cdn.sstatic.net/stackexchange/img/logos/so/so-icon.png',
+						   body: 'Click this notification to go to CoWin!',
+						  });
+						  notification.onclick = function() {
+								window.open('https://selfregistration.cowin.gov.in/');
+						  };
+					}
 				}
 				}, 3500);
+			alert('Desktop notificaton enabled!!\nYou can minimize the browser or switch between multiple tabs but don\'t close this tab.\nAlso just keep only one instance of this website open per machine.');
 		}
 	}
 	
@@ -121,7 +131,7 @@ renderTableData = () => {
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
 <div>
-		District ID: <select onChange={this.handleDistrictChange}>
+		District <select onChange={this.handleDistrictChange}>
             {this.state.optionItems}
         </select> <br/>
 		Date(dd-mm-yyyy): <input type="text" value={this.state.date} onChange={this.handleDateChange}></input><br/>
