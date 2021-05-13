@@ -15,12 +15,40 @@ export default class App extends React.Component {
 
 		tomorrow = dd + '-' + mm + '-' + yyyy;
 		this.state={
-			districtId : 312,
+			districtId : 0,
 			optionItems : [],
 			date : tomorrow,
 			age: 18,
-			availableCenters: []
+			availableCenters: [],
+			stateId : 0,
+			stateOptionItems : []
 		}
+	}
+
+	updateDistrictOnStateChange = () => {
+		setTimeout( async () => {
+		var items = [];
+			const url = "https://cdn-api.co-vin.in/api/v2/admin/location/districts/" + this.state.stateId;
+			const response = await fetch(url);
+			const data = await response.json();
+			const districts = data.districts;	 
+			for (let i = 0; i < districts.length; i++) {
+				// default to bhopal
+				if (i === 0 ) {
+					items.push(<option key={districts[i].district_id} value={districts[i].district_id} selected>{districts[i].district_name}</option>);
+					this.setState({districtId: districts[i].district_id});
+				} else {				
+					items.push(<option key={districts[i].district_id} value={districts[i].district_id}>{districts[i].district_name}</option>); 				
+				}
+			}
+			this.setState({optionItems: items});
+			
+		}, 0);
+	}
+
+	handleStateChange = (event) => {
+		this.setState({stateId: event.target.value});
+		this.updateDistrictOnStateChange();
 	}
 
 	handleDistrictChange = (event) => {
@@ -28,15 +56,20 @@ export default class App extends React.Component {
 	}
 	
 	handleDateChange = (event) => {
-		this.setState({date: event.target.value});
+		var changedDate = new Date(Date.parse(event.target.value));
+		var dd = String(changedDate.getDate()).padStart(2, '0');
+		var mm = String(changedDate.getMonth() + 1).padStart(2, '0');
+		var yyyy = changedDate.getFullYear();
+
+		changedDate = dd + '-' + mm + '-' + yyyy;
+		this.setState({date: changedDate});
 	}
 	
 	handleAgeChange = (event) => {
-		this.setState({age: event.target.value});
+		this.setState({age: parseInt(event.target.value)});
 	}
 	
 	notifyMe = () => {
-
 		if (Notification.permission !== 'granted') {
 			Notification.requestPermission();
 		}
@@ -53,7 +86,7 @@ export default class App extends React.Component {
 					var sessions = center.sessions;
 					for (var i = 0; i < sessions.length; i++){
 						//console.log(session);
-						if (sessions[i].min_age_limit === parseInt(this.state.age) && sessions[i].available_capacity > 0 ) {
+						if (sessions[i].min_age_limit === this.state.age && sessions[i].available_capacity > 0 ) {
 							return true;
 						}
 					}
@@ -79,18 +112,21 @@ export default class App extends React.Component {
 	}
 	
 	async componentDidMount () {
-			var items = [];
-			const url = "https://cdn-api.co-vin.in/api/v2/admin/location/districts/20";
-			const response = await fetch(url);
-			const data = await response.json();
-			const districts = data.districts;	 
-			for (let i = 0; i < districts.length; i++) {
-				// default to bhopal
-				districts[i].district_id === 312 ?
-				items.push(<option key={districts[i].district_id} value={districts[i].district_id} selected>{districts[i].district_name}</option>) :
-				items.push(<option key={districts[i].district_id} value={districts[i].district_id}>{districts[i].district_name}</option>); 				
-			}
-			this.setState({optionItems: items});
+		
+		var stateItems = [];
+		const urlStates = "https://cdn-api.co-vin.in/api/v2/admin/location/states";
+		const stateResponse = await fetch(urlStates);
+		const stateData = await stateResponse.json();
+		const states = stateData.states;
+		for (let i = 0; i < states.length; i++) {
+			// default to M.P.
+			states[i].state_id === 20 ?
+			stateItems.push(<option key={states[i].state_id} value={states[i].state_id} selected>{states[i].state_name}</option>) :
+			stateItems.push(<option key={states[i].state_id} value={states[i].state_id}>{states[i].state_name}</option>); 				
+		}
+		this.setState({stateOptionItems: stateItems});
+		this.setState({stateId: 20});
+		this.updateDistrictOnStateChange();
 		
 		if (!Notification) {
 		  alert('Desktop notifications not available in your browser. Try Chromium.');
@@ -131,15 +167,24 @@ renderTableData = () => {
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
 <div>
+		State <select onChange={this.handleStateChange}>
+            {this.state.stateOptionItems}
+        </select> <br/>
 		District <select onChange={this.handleDistrictChange}>
             {this.state.optionItems}
         </select> <br/>
-		Date(dd-mm-yyyy): <input type="text" value={this.state.date} onChange={this.handleDateChange}></input><br/>
-		Slot for (18 or 45) age: <input type="text" value={this.state.age} onChange={this.handleAgeChange}></input><br/>
+		Date: <input type="date" onChange={this.handleDateChange}/><br/>
+		Slot for age: <select onChange={this.handleAgeChange}>
+            <option key={18} value={18} selected>18</option>
+			<option key={45} value={45}>45</option>
+        </select> <br/>
         <button onClick={this.notifyMe}>Notify me!</button>
 </div>
 <div>
-            <h1 id='title'>Available Slots:</h1>
+<br/>
+            <span>Available Slots:</span> {(this.state.availableCenters.length > 0) ? 
+			<React.Fragment>
+			<span style={{color:'green'}}> Available</span> 
             <table id='results' border={1} style={{borderCollapse:'collapse'}}>
 			<thead>
 			<tr>
@@ -163,7 +208,8 @@ renderTableData = () => {
 				<tbody>
                   {this.renderTableData()}
                </tbody>
-            </table>
+            </table> </React.Fragment>
+			: <span style={{color:'red'}}> Not Available</span> }
          </div>
       </header>
     </div>
