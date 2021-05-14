@@ -78,7 +78,7 @@ export default class App extends React.Component {
 				clearInterval(this.intervalID);
 			}
 			this.intervalID = setInterval( async () => {
-				const url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id=" + this.state.districtId + "&date=" + this.state.date;
+				const url = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByDistrict?district_id=" + this.state.districtId + "&date=" + this.state.date;
 				const response = await fetch(url);
 				const data = await response.json();
 				var centers = data.centers;
