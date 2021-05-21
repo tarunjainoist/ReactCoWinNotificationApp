@@ -19,6 +19,8 @@ export default class App extends React.Component {
 			optionItems : [],
 			date : tomorrow,
 			age: 18,
+			vaccine: 'COVAXIN',
+			dose: 1,
 			availableCenters: [],
 			stateId : 0,
 			stateOptionItems : []
@@ -68,6 +70,14 @@ export default class App extends React.Component {
 	handleAgeChange = (event) => {
 		this.setState({age: parseInt(event.target.value)});
 	}
+
+	handleVaccineChange = (event) => {
+		this.setState({vaccine: event.target.value});
+	}
+	
+	handleDoseChange = (event) => {
+		this.setState({dose: parseInt(event.target.value)});
+	}
 	
 	notifyMe = () => {
 		if (Notification.permission !== 'granted') {
@@ -86,7 +96,8 @@ export default class App extends React.Component {
 					var sessions = center.sessions;
 					for (var i = 0; i < sessions.length; i++){
 						//console.log(session);
-						if (sessions[i].min_age_limit === this.state.age && sessions[i].available_capacity > 0 ) {
+						var doseAvailable = this.state.dose === 1 ? (sessions[i].available_capacity_dose1 > 0) : (sessions[i].available_capacity_dose2 > 0);
+						if (sessions[i].min_age_limit === this.state.age && sessions[i].vaccine === this.state.vaccine && doseAvailable) {
 							return true;
 						}
 					}
@@ -177,6 +188,14 @@ renderTableData = () => {
 		Slot for age: <select onChange={this.handleAgeChange}>
             <option key={18} value={18} selected>18</option>
 			<option key={45} value={45}>45</option>
+        </select> <br/>
+		Vaccine: <select onChange={this.handleVaccineChange}>
+            <option key={'COVAXIN'} value={'COVAXIN'} selected>COVAXIN</option>
+			<option key={'COVISHIELD'} value={'COVISHIELD'}>COVISHIELD</option>
+        </select> <br/>
+		Dose: <select onChange={this.handleDoseChange}>
+            <option key={1} value={1} selected>1</option>
+			<option key={2} value={2}>2</option>
         </select> <br/>
         <button onClick={this.notifyMe}>Notify me!</button>
 </div>
